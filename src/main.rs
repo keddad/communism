@@ -7,8 +7,11 @@ use std::path::Path;
 use std::path::PathBuf;
 use std::process::exit;
 
+// Intel version
 const BASE_PATH: &str = "/sys/class/backlight/intel_backlight/";
-const HELP_STR: &str = "communism: tool to control intel backlight\n--help to display this text\n--up <x> to increase brightness by x percent\n--down <x> to decrease brightness by x percent\n";
+// AMD version
+//const BASE_PATH: &str = "/sys/class/backlight/amdgpu_bl0/";
+const HELP_STR: &str = "communism: tool to control intel backlight\n--help to display this text\n--up <x> to increase brightness by x percent\n--down <x> to decrease brightness by x percent\n--get show the current brightness in percentage\n";
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -22,15 +25,26 @@ fn main() {
     let write_br_path = Path::new(&(write_br_path));
 
     let up: bool;
+    let down: bool;
+    let get: bool;
     let num: f32;
 
     match args.len() {
         3 => {
             up = if args[1] == "--up" { true } else { false };
+            down = if args[1] == "--down" { true } else { false };
+            get = false;
             num = match args[2].parse() {
                 Ok(n) => n,
                 Err(e) => panic!("{}", e),
             };
+        }
+
+        2 => {
+            get = if args[1] == "--get" { true } else { false };
+            up  = false;
+            down = false;
+            num = 100.0;
         }
 
         _ => {
@@ -66,10 +80,17 @@ fn main() {
 
     if up {
         target_br = min(max_br as i32, cur_br + ((max_br * (num / 100.0)) as i32));
-    } else {
+        write_to_file(target_br, write_br_path);
+    } else if down {
         target_br = max(0, cur_br - ((max_br * (num / 100.0)) as i32));
+        write_to_file(target_br, write_br_path);
+    } else if get {
+        let percentage = (cur_br * 100) / 255;
+        println!("{}%", percentage);
     }
+}
 
+fn write_to_file(target_br: i32, write_br_path: &Path) {
     let mut write_br_file = match File::create(&write_br_path) {
         Err(why) => panic!("couldn't create brightness: {}", why),
         Ok(file) => file,
