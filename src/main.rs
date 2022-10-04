@@ -8,9 +8,9 @@ use std::path::PathBuf;
 use std::process::exit;
 
 // Intel version
-//const BASE_PATH: &str = "/sys/class/backlight/intel_backlight/";
+const BASE_PATH: &str = "/sys/class/backlight/intel_backlight/";
 // AMD version
-const BASE_PATH: &str = "/sys/class/backlight/amdgpu_bl0/";
+//const BASE_PATH: &str = "/sys/class/backlight/amdgpu_bl0/";
 const HELP_STR: &str = "communism: tool to control intel backlight\n--help to display this text\n--up <x> to increase brightness by x percent\n--down <x> to decrease brightness by x percent\n--get show the current brightness in percentage\n";
 
 enum Action {
